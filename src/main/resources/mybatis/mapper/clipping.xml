@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.job.my.clipping.dao.IClippingDAO">
+	
+	<insert id="clipping" parameterType="clippingVO">
+		INSERT INTO clippings
+               (clipping_no, mem_id, recruitment_no)
+              
+		VALUES (clippings_seq.NEXTVAL, #{memId}, #{recruitmentNo})
+	</insert>
+	
+	<select id="getClipping" parameterType="clippingVO"
+		resultType="RecruitmentVO">
+		SELECT *
+		FROM clippings a, recruitments b
+		WHERE a.recruitment_no = b.recruitment_no
+		AND mem_id = #{memId}
+		ORDER BY clippings_date DESC
+	</select>
+	
+	<delete id="delClipping" parameterType="clippingVO">
+	delete clippings
+	WHERE mem_id = #{memId}
+	AND recruitment_no = #{recruitmentNo}
+	</delete>
+	
+</mapper>

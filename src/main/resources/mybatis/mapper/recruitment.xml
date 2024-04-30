@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.job.my.recruitments.dao.IRecruitmentDAO">
+
+
+	<sql id="recSearch">
+		<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(eduLv)">
+			AND education_code <![CDATA[<=]]> #{eduLv}
+			</if>
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(keywords)">
+			AND LOWER(recruitment_title) LIKE LOWER('%'|| #{keywords} ||'%')
+			</if>
+			
+			<if test="@org.apache.commons.lang3.StringUtils@isNotBlank(locCd)">
+			AND location_code LIKE
+			  CASE 
+			    WHEN SUBSTR(#{locCd}, 4) = '000' THEN '%'||SUBSTR(#{locCd},1, 3)||'%'
+			    ELSE #{locCd}
+			  END
+			</if>
+			
+			<if test="orderBy=='posting_date'">
+			ORDER BY posting_date DESC
+			</if>
+			
+			<if test="orderBy=='expiration_date'">
+			ORDER BY expiration_date
+			</if>
+	</sql>
+
+	<select id="getRecruitment" resultType="RecruitmentVO" parameterType="RecSearchVO">
+	SELECT * 
+		FROM(
+		    SELECT t1.*, rownum as rnum
+		    FROM(
+	
+					SELECT  recruitment_no, recruitment_title, company_nm, COMPANY_LOCATION, 
+							location_code, industry_name, industry_code, job_mid_code, 
+							education_level, education_code, experience_code, 
+							experience_level, salary, posting_date, expiration_date, recruitment_url
+					FROM recruitments
+					WHERE experience_code IN (0,1,3)
+					<include refid="recSearch"></include>		
+				) T1
+		   )
+		WHERE rnum BETWEEN #{firstRow} AND #{lastRow}
+	</select>
+	
+	<select id="getTotalRowCount" parameterType="RecSearchVO" resultType="int">
+		SELECT count(*)
+		FROM recruitments
+		WHERE 1=1
+		<include refid="recSearch"></include>
+	</select>
+	
+	<select id="getRecommend" parameterType="RecruitmentVO" resultType="RecruitmentVO">
+		SELECT  recruitment_no, recruitment_title, company_nm, COMPANY_LOCATION, 
+	        location_code, industry_name, industry_code, job_mid_code, 
+	        education_level, education_code, experience_code, 
+	        experience_level, salary, posting_date, expiration_date, recruitment_url
+		FROM recruitments
+		WHERE experience_code IN (0,1,3)
+		AND RECRUITMENT_NO = #{recruitmentNo}
+	</select>
+	
+</mapper>
